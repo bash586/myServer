@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
-import { apiConfig } from "../config.js";
+import { config } from "../config.js";
 
 
-export function handlerGetViewsCount(req: Request, res: Response) {
+export async function handlerGetViewsCount(req: Request, res: Response) {
     const html = `
         <html>
             <body>
                 <h1>Welcome, Chirpy Admin</h1>
-                <p>Chirpy has been visited ${apiConfig.fileserverHits} times!</p>
+                <p>Chirpy has been visited ${config.api.fileserverHits} times!</p>
             </body>
         </html>
     `;

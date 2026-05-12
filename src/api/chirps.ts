@@ -1,4 +1,5 @@
-import { Response, Request, response } from "express";
+import { Response, Request } from "express";
+import { BadRequestError } from "./errors.js";
 
 type Chirp = {
     body: string,
@@ -9,29 +10,25 @@ function isValidChirp(chirp: unknown): chirp is Chirp {
     return (chirp != null && typeof chirp == "object" && "body" in chirp);
 }
 
-export function handlerValidateChirp(req: Request, res: Response) {
-    const responseBody: Record<string, any> = {};
-    let statusCode = 200;
-    try {
-        const parsedBody = req.body;
+export async function handlerValidateChirp(req: Request, res: Response) {
+    const parsedBody = req.body;
 
-        if (isValidChirp(parsedBody)) {
-            const bodyMsg: string = parsedBody.body;
-
-            if (bodyMsg.length > 140) {
-                responseBody["error"] = "Chirp is too long";
-                statusCode = 400;
-            }
-            if (statusCode == 200) {
-                responseBody["cleanedBody"] = cleanBody(bodyMsg);
-            }
-        }
-    } catch (err) {
-        responseBody["error"] = "Something went wrong";
-        statusCode = 400;
+    if (!isValidChirp(parsedBody)) {
+        throw new BadRequestError("Chirp body is required");
     }
+
+    const bodyMsg: string = parsedBody.body;
+
+    if (bodyMsg.length > 140) {
+        throw new BadRequestError("Chirp is too long. Max length is 140");
+    }
+
+    const responseBody = {
+        cleanedBody: cleanBody(bodyMsg)
+    };
+
     res.header("Content-Type", "application/json");
-    res.status(statusCode).send(JSON.stringify(responseBody));
+    res.status(200).send(JSON.stringify(responseBody));
 }
 
 function cleanBody(body: string) {
